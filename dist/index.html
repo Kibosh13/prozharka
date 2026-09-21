@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Прожарка — закрытый Telegram-проект Татьяны Гальцевой: тренировки, питание и растяжка с понятным планом на месяц."
+    />
+    <meta name="theme-color" content="#721f2b" />
+    <title>Прожарка — тренировки, питание и растяжка</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23721f2b'/%3E%3Cpath d='M19 16h18c8 0 13 4 13 11s-5 12-14 12H28v10H19V16Zm9 8v8h7c4 0 6-1 6-4s-2-4-6-4h-7Z' fill='%23f4efe7'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">К содержанию</a>
+    <div class="scroll-progress" aria-hidden="true"><span></span></div>
+
+    <header class="site-header" data-header>
+      <a class="brand" href="#top" aria-label="Прожарка — на главную">
+        <span class="brand-mark">ПРЖ</span>
+        <span class="brand-note">временный знак</span>
+      </a>
+      <nav class="nav" aria-label="Навигация">
+        <a href="#inside">Что внутри</a>
+        <a href="#results">Результаты</a>
+        <a href="#about">О Татьяне</a>
+      </nav>
+      <a class="button button--small" href="#buy">В проект</a>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">Закрытый Telegram-проект · для женщин</p>
+          <h1 id="hero-title">
+            <span>ПРО</span><span>ЖАРКА</span>
+          </h1>
+          <div class="hero-intro">
+            <p>Тренировки, питание и растяжка — с понятным планом действий на месяц.</p>
+            <a class="button button--light" href="#buy">Присоединиться</a>
+          </div>
+        </div>
+
+        <figure class="hero-media reveal">
+          <img src="./assets/hero.jpg" alt="Татьяна Гальцева в спортивном образе" />
+          <figcaption>
+            <span>Татьяна Гальцева</span>
+            <span>автор проекта</span>
+          </figcaption>
+        </figure>
+
+        <div class="hero-stamp" aria-hidden="true">
+          <span>двигайся</span>
+          <b>по плану</b>
+        </div>
+      </section>
+
+      <section class="statement section-pad" aria-label="О проекте">
+        <p class="section-index">01 / Подход</p>
+        <div class="statement-copy reveal">
+          <span class="statement-kicker">Без лишнего шума</span>
+          <h2>Я не гружу терминами.<br />Я даю рабочий инструмент.</h2>
+          <p>
+            Чёткий план на месяц, который не нужно собирать по кусочкам. Открывай канал,
+            следуй шагам и получай результат.
+          </p>
+        </div>
+        <div class="statement-rule" aria-hidden="true">
+          <span>План</span><i></i><span>Действие</span><i></i><span>Результат</span>
+        </div>
+      </section>
+
+      <section class="inside section-pad" id="inside" aria-labelledby="inside-title">
+        <div class="section-heading reveal">
+          <p class="section-index">02 / Каждый месяц</p>
+          <h2 id="inside-title">Всё необходимое.<br />В одном канале.</h2>
+          <p>
+            Материалы выходят по понятному расписанию, а заниматься можно в удобном для себя
+            темпе.
+          </p>
+        </div>
+
+        <div class="program-grid">
+          <article class="program-card program-card--dark reveal">
+            <span class="card-number">01</span>
+            <h3>Тренировки<br />в зале</h3>
+            <p>План на месяц и наглядные разборы техники каждого упражнения.</p>
+            <span class="card-tag">смотри · повторяй</span>
+          </article>
+
+          <article class="program-card program-card--photo reveal">
+            <img src="./assets/editorial-close.jpg" alt="Атмосферный портрет Татьяны" loading="lazy" />
+            <div class="card-overlay">
+              <span class="card-number">02</span>
+              <h3>Питание</h3>
+              <p>Рацион, подробные рецепты и рассчитанные КБЖУ.</p>
+            </div>
+          </article>
+
+          <article class="program-card program-card--burgundy reveal">
+            <span class="card-number">03</span>
+            <h3>Растяжка</h3>
+            <p>Практики для мобильности, гибкости и мягкого восстановления.</p>
+            <span class="card-tag">в своём ритме</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="library section-pad" aria-labelledby="library-title">
+        <div class="library-photo reveal">
+          <img src="./assets/stretch.jpg" alt="Татьяна выполняет упражнение на растяжку" loading="lazy" />
+          <span class="photo-label">Движение становится привычкой</span>
+        </div>
+        <div class="library-copy reveal">
+          <p class="section-index">03 / Библиотека</p>
+          <h2 id="library-title">Доступ растёт вместе с тобой.</h2>
+          <p class="library-lead">
+            Материалы предыдущих потоков не удаляются. Они накапливаются в канале и остаются
+            доступны участницам.
+          </p>
+          <div class="library-counter" aria-label="Новые материалы каждый месяц">
+            <strong>+1</strong>
+            <span>новая программа<br />каждый месяц</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="results section-pad" id="results" aria-labelledby="results-title">
+        <div class="section-heading section-heading--wide reveal">
+          <p class="section-index">04 / Результаты</p>
+          <h2 id="results-title">Не обещания.<br />Изменения.</h2>
+          <p class="placeholder-note">Отзывы и реальные фотографии учениц добавим сюда после получения материалов.</p>
+        </div>
+
+        <div class="before-after reveal" aria-label="Место для фотографий до и после">
+          <div class="result-frame">
+            <span>ДО</span>
+            <p>Фото ученицы</p>
+          </div>
+          <div class="result-arrow" aria-hidden="true">↗</div>
+          <div class="result-frame result-frame--after">
+            <span>ПОСЛЕ</span>
+            <p>Фото результата</p>
+          </div>
+          <div class="result-caption">
+            <b>История участницы</b>
+            <p>Здесь появится короткий рассказ о цели, процессе и результате.</p>
+          </div>
+        </div>
+
+        <div class="reviews" aria-label="Место для отзывов">
+          <article class="review-card reveal">
+            <span class="quote">“</span>
+            <p>Здесь будет живой отзыв участницы о тренировках и удобном формате проекта.</p>
+            <span>Имя · город</span>
+          </article>
+          <article class="review-card reveal">
+            <span class="quote">“</span>
+            <p>Здесь будет отзыв о питании, поддержке и первых заметных изменениях.</p>
+            <span>Имя · город</span>
+          </article>
+          <article class="review-card reveal">
+            <span class="quote">“</span>
+            <p>Здесь будет отзыв участницы, которая начинала с нуля.</p>
+            <span>Имя · город</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="about section-pad" id="about" aria-labelledby="about-title">
+        <div class="about-portrait reveal">
+          <img src="./assets/portrait-gym.jpg" alt="Портрет Татьяны Гальцевой в зале" loading="lazy" />
+        </div>
+        <div class="about-copy reveal">
+          <p class="section-index">05 / Автор</p>
+          <p class="about-label">Кто такая</p>
+          <h2 id="about-title">Татьяна<br />Гальцева</h2>
+          <p>
+            Автор проекта «Прожарка». Помогает женщинам выстроить понятную систему тренировок,
+            питания и заботы о теле без перегруза сложными терминами.
+          </p>
+          <div class="bio-placeholder">
+            <span>Сюда добавим</span>
+            <p>Опыт, образование, достижения и личную историю Татьяны.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="faq section-pad" aria-labelledby="faq-title">
+        <div class="faq-title-wrap reveal">
+          <p class="section-index">06 / Вопросы</p>
+          <h2 id="faq-title">Коротко<br />о важном.</h2>
+        </div>
+        <div class="faq-list reveal">
+          <details>
+            <summary>Что делать после оплаты?<span>+</span></summary>
+            <p>После подключения оплаты здесь появится точная инструкция по входу в закрытый Telegram-канал.</p>
+          </details>
+          <details>
+            <summary>Сколько длится подписка?<span>+</span></summary>
+            <p>Условия и срок подписки добавим после финального согласования формата участия.</p>
+          </details>
+          <details>
+            <summary>Мне подходит, если я новичок?<span>+</span></summary>
+            <p>Да. Программа строится по понятному плану, а техника упражнений разбирается наглядно.</p>
+          </details>
+          <details>
+            <summary>Будет ли обратная связь?<span>+</span></summary>
+            <p>Формат обратной связи уточняется и будет указан здесь до запуска продаж.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="buy section-pad" id="buy" aria-labelledby="buy-title">
+        <div class="buy-photo reveal">
+          <img src="./assets/final.jpg" alt="Татьяна в светлом образе" loading="lazy" />
+        </div>
+        <div class="buy-card reveal">
+          <p class="section-index section-index--light">07 / Участие</p>
+          <h2 id="buy-title">Твой план.<br />Твой темп.<br />Твой результат.</h2>
+          <div class="price-row">
+            <span>Стоимость участия</span>
+            <strong>— ₽</strong>
+          </div>
+          <button class="button button--disabled" type="button" disabled>Оплата будет подключена</button>
+          <p class="buy-note">Ссылка, цена и условия подписки появятся после согласования.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" id="legal">
+      <div class="footer-brand" aria-label="Временный логотип Прожарки">
+        <strong>ПРОЖАРКА</strong>
+        <span>тренировки · питание · растяжка</span>
+      </div>
+      <div class="footer-links">
+        <a href="#legal" aria-disabled="true">Политика конфиденциальности</a>
+        <span>Реквизиты будут добавлены</span>
+      </div>
+      <p>© <span data-year></span> «Прожарка»</p>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
