@@ -9,8 +9,8 @@
   --white: #fffdf8;
   --pad: clamp(20px, 4vw, 64px);
   --radius: 8px;
-  --font-body: "Onest", Arial, Helvetica, sans-serif;
-  --font-display: "Unbounded", "Arial Narrow", Arial, sans-serif;
+  --font-body: "Manrope", Arial, Helvetica, sans-serif;
+  --font-display: "Tenor Sans", Arial, sans-serif;
   --font-accent: Georgia, "Times New Roman", serif;
 }
 
@@ -132,9 +132,9 @@ a {
 
 .brand-mark {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.92rem;
-  letter-spacing: -0.055em;
+  font-weight: 400;
+  font-size: 1rem;
+  letter-spacing: 0.055em;
 }
 
 .brand-note {
@@ -292,10 +292,10 @@ a {
   flex-direction: column;
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(4.2rem, 9vw, 10.2rem);
-  font-weight: 700;
-  line-height: 0.73;
-  letter-spacing: -0.075em;
+  font-size: clamp(5rem, 11vw, 12.4rem);
+  font-weight: 400;
+  line-height: 0.69;
+  letter-spacing: -0.07em;
 }
 
 .hero h1 span {
@@ -424,10 +424,10 @@ a {
 .buy h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(2.8rem, 5.6vw, 6.4rem);
-  font-weight: 600;
-  line-height: 0.96;
-  letter-spacing: -0.055em;
+  font-size: clamp(3.3rem, 6.8vw, 7.5rem);
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: -0.065em;
   text-transform: uppercase;
 }
 
@@ -517,10 +517,10 @@ a {
 .program-card h3 {
   margin: auto 0 20px;
   font-family: var(--font-display);
-  font-size: clamp(2.25rem, 3.4vw, 3.75rem);
-  font-weight: 600;
-  line-height: 0.95;
-  letter-spacing: -0.055em;
+  font-size: clamp(3rem, 4.5vw, 4.8rem);
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: -0.06em;
   text-transform: uppercase;
 }
 
@@ -986,9 +986,10 @@ a {
 
 .footer-brand strong {
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 5.2vw, 5.4rem);
-  line-height: 0.9;
-  letter-spacing: -0.065em;
+  font-size: clamp(3rem, 6.2vw, 6.4rem);
+  font-weight: 400;
+  line-height: 0.82;
+  letter-spacing: -0.055em;
 }
 
 .footer-brand span,
@@ -1072,30 +1073,37 @@ a {
 
 @media (max-width: 1100px) {
   .site-header {
-    grid-template-columns: 1fr auto;
-    gap: 8px 20px;
-    border-radius: 28px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: clamp(8px, 2vw, 22px);
+    border-radius: 999px;
   }
 
   .nav {
-    grid-column: 1 / -1;
+    grid-column: auto;
     justify-content: center;
-    padding-top: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    min-width: 0;
+    padding-top: 0;
+    overflow-x: auto;
+    border-top: 0;
+    scrollbar-width: none;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
   }
 
   .site-header .button--small {
-    grid-column: 2;
-    grid-row: 1;
+    grid-column: auto;
+    grid-row: auto;
   }
 
   .hero {
     grid-template-columns: 0.95fr 1.05fr;
-    padding-top: 142px;
+    padding-top: 100px;
   }
 
   .hero h1 {
-    font-size: clamp(3.2rem, 8.4vw, 6.2rem);
+    font-size: clamp(4rem, 10vw, 7.4rem);
   }
 
   .hero-intro {
@@ -1145,8 +1153,10 @@ a {
 
   .site-header {
     inset: 8px 10px auto;
-    min-height: 0;
-    padding: 8px 9px 8px 15px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 5px;
+    min-height: 54px;
+    padding: 7px 8px 7px 14px;
   }
 
   .brand-note {
@@ -1154,25 +1164,27 @@ a {
   }
 
   .brand-mark {
-    font-size: 0.74rem;
+    font-size: 0.76rem;
+    letter-spacing: 0.02em;
   }
 
   .nav {
-    justify-content: stretch;
-    gap: 3px;
-    padding-top: 7px;
+    justify-content: flex-start;
+    gap: 1px;
+    padding-top: 0;
   }
 
   .nav a {
-    flex: 1;
-    padding: 7px 4px;
-    font-size: 0.63rem;
+    flex: 0 0 auto;
+    padding: 7px 8px;
+    font-size: 0.62rem;
     text-align: center;
   }
 
   .button--small {
     min-height: 36px;
-    padding: 0 17px;
+    padding: 0 12px;
+    font-size: 0.68rem;
   }
 
   .button--small::after {
@@ -1187,7 +1199,7 @@ a {
     display: flex;
     flex-direction: column;
     min-height: auto;
-    padding-top: 142px;
+    padding-top: 88px;
   }
 
   .hero-copy {
@@ -1199,8 +1211,8 @@ a {
   }
 
   .hero h1 {
-    font-size: clamp(3.25rem, 15vw, 5rem);
-    line-height: 0.8;
+    font-size: clamp(4.3rem, 20vw, 6.8rem);
+    line-height: 0.72;
   }
 
   .hero-intro {
@@ -1242,8 +1254,8 @@ a {
   .about h2,
   .faq h2,
   .buy h2 {
-    font-size: clamp(2.25rem, 10.8vw, 4.2rem);
-    line-height: 1;
+    font-size: clamp(3rem, 13vw, 5rem);
+    line-height: 0.92;
   }
 
   .statement-rule {
@@ -1371,6 +1383,44 @@ a {
 
   .footer > p {
     grid-column: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .site-header {
+    gap: 2px;
+    padding-left: 10px;
+  }
+
+  .brand {
+    margin-right: 3px;
+  }
+
+  .brand-mark {
+    font-size: 0;
+  }
+
+  .brand-mark::after {
+    content: "ПРЖ";
+    font-size: 0.76rem;
+    letter-spacing: 0.04em;
+  }
+
+  .nav a {
+    padding-inline: 6px;
+    font-size: 0.59rem;
+  }
+
+  .button--small {
+    width: 36px;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .button--small::after {
+    display: block;
+    margin: 0;
+    font-size: 0.88rem;
   }
 }
 
