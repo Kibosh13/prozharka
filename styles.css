@@ -524,7 +524,8 @@ a {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 620px;
+  min-height: 0;
+  aspect-ratio: 1280 / 1215;
   padding: clamp(24px, 3vw, 46px);
   overflow: hidden;
   border-radius: var(--radius);
@@ -606,7 +607,7 @@ a {
 }
 
 .program-card--nutrition-cover img {
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   filter: none;
 }
@@ -637,7 +638,8 @@ a {
   z-index: 2;
   display: flex;
   flex-direction: column;
-  min-height: 620px;
+  height: 100%;
+  min-height: 0;
   padding: clamp(24px, 3vw, 46px);
 }
 
@@ -1202,6 +1204,12 @@ a {
     min-height: 420px;
   }
 
+  .program-card--stretch {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc(50% - 6px);
+  }
+
   .footer {
     grid-template-columns: 1fr 1fr;
   }
@@ -1357,11 +1365,17 @@ a {
 
   .program-card,
   .card-overlay {
-    min-height: 520px;
+    min-height: 0;
+    aspect-ratio: 1280 / 1215;
   }
 
   .program-card--burgundy {
     grid-column: auto;
+  }
+
+  .program-card--stretch {
+    grid-column: auto;
+    width: 100%;
   }
 
   .library,
