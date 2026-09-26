@@ -525,7 +525,7 @@ a {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  aspect-ratio: 1280 / 1215;
+  aspect-ratio: 853 / 1280;
   padding: clamp(24px, 3vw, 46px);
   overflow: hidden;
   border-radius: var(--radius);
@@ -602,23 +602,8 @@ a {
   object-position: 50% 48%;
 }
 
-.program-card--nutrition-cover {
-  background: #c4a17f;
-}
-
-.program-card--nutrition-cover img {
-  object-fit: cover;
-  object-position: center;
-  filter: none;
-}
-
-.program-card--nutrition-cover:hover img {
-  transform: none;
-  filter: none;
-}
-
-.program-card--nutrition-cover::after {
-  display: none;
+.program-card--nutrition img {
+  object-position: 50% 50%;
 }
 
 .program-card--photo:hover img {
@@ -1366,7 +1351,7 @@ a {
   .program-card,
   .card-overlay {
     min-height: 0;
-    aspect-ratio: 1280 / 1215;
+    aspect-ratio: 853 / 1280;
   }
 
   .program-card--burgundy {
