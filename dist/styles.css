@@ -661,6 +661,12 @@ a {
   backdrop-filter: blur(8px);
 }
 
+.library-photo .photo-label {
+  max-width: calc(100% - 44px);
+  line-height: 1.35;
+  white-space: normal;
+}
+
 .library-copy h2 {
   margin: clamp(60px, 8vw, 120px) 0 38px;
 }
@@ -876,6 +882,12 @@ a {
   margin: 0;
   font-family: var(--font-accent);
   font-size: clamp(1.15rem, 1.8vw, 1.55rem);
+  line-height: 1.45;
+}
+
+.about-copy > .about-bio {
+  font-size: clamp(1rem, 1.5vw, 1.3rem);
+  line-height: 1.5;
 }
 
 .bio-placeholder {
@@ -1474,7 +1486,7 @@ a {
   }
 
   .brand-mark::after {
-    content: "п·ж";
+    content: "П·Ж";
     font-family: var(--font-logo);
     font-size: 1.12rem;
     font-weight: 600;
