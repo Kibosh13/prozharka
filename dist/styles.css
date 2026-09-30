@@ -710,128 +710,58 @@ a {
   grid-template-columns: 0.55fr 1.2fr 1fr;
 }
 
-.results .section-heading > p:last-child {
-  color: rgba(18, 16, 15, 0.6);
-}
-
-.placeholder-note {
-  padding-left: 20px;
-  border-left: 2px solid var(--wine);
-}
-
-.before-after {
+.results-gallery {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 14px;
 }
 
-.result-frame {
+.result-card {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 540px;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background:
-    radial-gradient(circle at 52% 34%, rgba(154, 106, 72, 0.14), transparent 26%),
-    repeating-linear-gradient(45deg, transparent 0 20px, rgba(18, 16, 15, 0.025) 20px 21px);
-}
-
-.result-frame span {
-  position: absolute;
-  inset: 20px auto auto 20px;
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.result-frame p {
-  color: rgba(18, 16, 15, 0.42);
-  font-family: var(--font-accent);
-  font-size: 1.25rem;
-  font-style: italic;
-}
-
-.result-frame--after {
-  color: var(--white);
-  background:
-    radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.13), transparent 26%),
-    var(--wine);
-}
-
-.result-frame--after p {
-  color: rgba(255, 253, 248, 0.65);
-}
-
-.result-arrow {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  width: 66px;
+  grid-column: span 4;
   aspect-ratio: 1;
-  margin-inline: -10px;
-  border-radius: 50%;
-  color: var(--white);
-  background: var(--ink);
-  font-size: 1.4rem;
-}
-
-.result-caption {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 32px;
-  padding: 24px 0 0;
-  border-top: 1px solid var(--line);
-}
-
-.result-caption p {
-  max-width: 570px;
   margin: 0;
-  font-family: var(--font-accent);
-}
-
-.reviews {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: clamp(70px, 10vw, 130px);
-}
-
-.review-card {
-  display: flex;
-  flex-direction: column;
-  min-height: 340px;
-  padding: 28px;
-  border: 1px solid var(--line);
+  overflow: hidden;
   border-radius: var(--radius);
-  transition: transform 0.35s ease, color 0.35s ease, background 0.35s ease;
+  background: var(--ink);
 }
 
-.review-card:hover {
+.result-card:nth-child(1),
+.result-card:nth-child(2),
+.result-card:nth-child(6),
+.result-card:nth-child(7) {
+  grid-column: span 6;
+}
+
+.result-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.result-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 34%;
+  background: linear-gradient(transparent, rgba(18, 16, 15, 0.72));
+  pointer-events: none;
+}
+
+.result-card:hover img {
+  transform: scale(1.025);
+}
+
+.result-card figcaption {
+  position: absolute;
+  z-index: 2;
+  inset: auto 20px 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
   color: var(--white);
-  background: var(--wine);
-  transform: translateY(-8px);
-}
-
-.review-card .quote {
-  color: var(--wine);
-  font-family: var(--font-accent);
-  font-size: 4.5rem;
-  line-height: 0.8;
-}
-
-.review-card p {
-  margin: auto 0 36px;
-  font-family: var(--font-accent);
-  font-size: clamp(1.1rem, 1.5vw, 1.35rem);
-}
-
-.review-card > span:last-child {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -1394,29 +1324,21 @@ a {
     margin-top: 80px;
   }
 
-  .before-after {
-    grid-template-columns: 1fr;
+  .results-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .result-frame {
-    min-height: 450px;
+  .result-card,
+  .result-card:nth-child(1),
+  .result-card:nth-child(2),
+  .result-card:nth-child(6),
+  .result-card:nth-child(7) {
+    grid-column: span 1;
   }
 
-  .result-arrow {
-    margin: -26px auto;
-    transform: rotate(45deg);
-  }
-
-  .result-caption {
-    grid-template-columns: 1fr;
-  }
-
-  .reviews {
-    grid-template-columns: 1fr;
-  }
-
-  .review-card {
-    min-height: 300px;
+  .result-card:last-child {
+    grid-column: 1 / -1;
+    aspect-ratio: 1.5;
   }
 
   .about {
@@ -1475,6 +1397,20 @@ a {
   .site-header {
     gap: 2px;
     padding-left: 10px;
+  }
+
+  .results-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .result-card,
+  .result-card:nth-child(1),
+  .result-card:nth-child(2),
+  .result-card:nth-child(6),
+  .result-card:nth-child(7),
+  .result-card:last-child {
+    grid-column: auto;
+    aspect-ratio: 1;
   }
 
   .brand {
