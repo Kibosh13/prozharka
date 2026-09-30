@@ -5,7 +5,9 @@ declare(strict_types=1);
 use Prozharka\Http;
 use Prozharka\ProdamusHmac;
 
-$container = require dirname(__DIR__) . '/src/bootstrap.php';
+$configuredRoot = trim((string) getenv('PROZHARKA_BACKEND_ROOT'));
+$backendRoot = $configuredRoot !== '' ? rtrim($configuredRoot, '/\\') : dirname(__DIR__);
+$container = require $backendRoot . '/src/bootstrap.php';
 $config = $container['config'];
 $subscriptions = $container['subscriptions'];
 $bot = $container['bot'];
@@ -61,4 +63,3 @@ try {
     error_log('[prozharka] ' . $error->getMessage());
     Http::json(['ok' => false, 'error' => 'Временная ошибка сервиса'], 500);
 }
-
