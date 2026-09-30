@@ -50,7 +50,29 @@ try {
         if ($actual === '' || !hash_equals($expected, $actual)) {
             Http::json(['ok' => false, 'error' => 'invalid_secret'], 401);
         }
-        Http::json(['ok' => true, 'result' => $bot->handle(Http::jsonBody())]);
+        $update = Http::jsonBody();
+        if (trim((string) $config->get('TELEGRAM_CHANNEL_ID', '')) === '') {
+            $chat = $update['channel_post']['chat']
+                ?? $update['my_chat_member']['chat']
+                ?? $update['chat_member']['chat']
+                ?? null;
+            if (is_array($chat) && in_array((string) ($chat['type'] ?? ''), ['channel', 'supergroup'], true)) {
+                $candidate = [
+                    'id' => (string) ($chat['id'] ?? ''),
+                    'type' => (string) ($chat['type'] ?? ''),
+                    'title' => (string) ($chat['title'] ?? ''),
+                    'seen_at' => gmdate(DATE_ATOM),
+                ];
+                if ($candidate['id'] !== '') {
+                    file_put_contents(
+                        dirname(__DIR__) . '/var/channel-discovery.json',
+                        json_encode($candidate, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                        LOCK_EX,
+                    );
+                }
+            }
+        }
+        Http::json(['ok' => true, 'result' => $bot->handle($update)]);
     }
 
     Http::json(['ok' => false, 'error' => 'not_found'], 404);
