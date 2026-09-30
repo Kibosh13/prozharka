@@ -171,6 +171,11 @@ final class SubscriptionService
             $isSuccess = $paymentStatus === 'success'
                 || ($actionCode === 'auto_payment' && ($subscriptionPayload['active'] ?? '1') !== '0' && $error === '');
             if ($isSuccess) {
+                $paidAmount = $this->money((string) ($payload['sum'] ?? ''));
+                $expectedAmount = $this->money((string) $order['amount']);
+                if ($paidAmount === null || $expectedAmount === null || $paidAmount !== $expectedAmount) {
+                    return 'ignored_amount_mismatch';
+                }
                 $this->activateOrder($pdo, $order, $providerSubscriptionId, $payload, $subscriptionPayload);
                 return 'activated_or_renewed';
             }
@@ -431,6 +436,15 @@ final class SubscriptionService
         }
     }
 
+    private function money(string $value): ?int
+    {
+        $normalized = str_replace(',', '.', trim($value));
+        if ($normalized === '' || !preg_match('/^\d+(?:\.\d{1,2})?$/', $normalized)) {
+            return null;
+        }
+        return (int) round(((float) $normalized) * 100);
+    }
+
     private function sortRecursively(array $value): array
     {
         ksort($value, SORT_STRING);
@@ -447,4 +461,3 @@ final class SubscriptionService
         return (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format(DATE_ATOM);
     }
 }
-

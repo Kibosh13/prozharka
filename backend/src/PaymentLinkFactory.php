@@ -15,8 +15,7 @@ final class PaymentLinkFactory
     public function isConfigured(): bool
     {
         return trim((string) $this->config->get('PRODAMUS_FORM_URL', '')) !== ''
-            && trim((string) $this->config->get('PRODAMUS_SECRET_KEY', '')) !== ''
-            && trim((string) $this->config->get('PRODAMUS_SUBSCRIPTION_ID', '')) !== '';
+            && trim((string) $this->config->get('PRODAMUS_SECRET_KEY', '')) !== '';
     }
 
     public function forOrder(array $order, array $customer, string $publicToken): string
@@ -33,15 +32,29 @@ final class PaymentLinkFactory
             'customer_name' => (string) $customer['full_name'],
             'customer_phone' => (string) $customer['phone'],
             'customer_email' => (string) $customer['email'],
-            'customer_extra' => 'Подписка на проект «Прожарка»',
-            'subscription' => $this->config->require('PRODAMUS_SUBSCRIPTION_ID'),
-            'sys' => $this->config->get('PRODAMUS_SYSTEM_CODE', 'prozharka'),
+            'customer_extra' => 'Доступ к проекту «Прожарка» на 30 дней',
             'urlSuccess' => $siteBaseUrl . '/payment.html?order=' . rawurlencode($publicToken),
             'urlReturn' => $siteBaseUrl . '/#subscription',
         ];
+
+        $subscriptionId = trim((string) $this->config->get('PRODAMUS_SUBSCRIPTION_ID', ''));
+        if ($subscriptionId !== '') {
+            $data['subscription'] = $subscriptionId;
+        } else {
+            $data['products'] = [[
+                'name' => 'Доступ к проекту «Прожарка» на 30 дней',
+                'price' => (string) $order['amount'],
+                'quantity' => '1',
+                'type' => 'service',
+            ]];
+        }
+
+        $systemCode = trim((string) $this->config->get('PRODAMUS_SYSTEM_CODE', ''));
+        if ($systemCode !== '') {
+            $data['sys'] = $systemCode;
+        }
         $data['signature'] = ProdamusHmac::sign($data, $this->config->require('PRODAMUS_SECRET_KEY'));
 
         return $formUrl . '?' . http_build_query($data, '', '&', PHP_QUERY_RFC3986);
     }
 }
-

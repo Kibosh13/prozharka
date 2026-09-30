@@ -54,10 +54,10 @@ $configValues = [
     'DATABASE_PATH' => $databasePath,
     'PRODAMUS_FORM_URL' => 'https://demo.payform.test',
     'PRODAMUS_SECRET_KEY' => 'test-secret',
-    'PRODAMUS_SUBSCRIPTION_ID' => '42',
-    'PRODAMUS_SYSTEM_CODE' => 'prozharka',
+    'PRODAMUS_SUBSCRIPTION_ID' => '',
+    'PRODAMUS_SYSTEM_CODE' => '',
     'SUBSCRIPTION_PRICE' => '4990',
-    'SUBSCRIPTION_DAYS' => '31',
+    'SUBSCRIPTION_DAYS' => '30',
     'ACCESS_GRACE_HOURS' => '24',
     'INVITE_LINK_TTL_HOURS' => '24',
     'TELEGRAM_CHANNEL_ID' => '-1001234567890',
@@ -90,6 +90,9 @@ try {
     parse_str((string) parse_url($checkout['payment_url'], PHP_URL_QUERY), $paymentQuery);
     $providerOrderId = (string) ($paymentQuery['order_id'] ?? '');
     expect(str_starts_with($providerOrderId, 'prozharka-'), 'Provider order id must be generated');
+    expect(($paymentQuery['products'][0]['price'] ?? null) === '4990', 'Manual-renewal checkout must contain the configured price');
+    expect(($paymentQuery['products'][0]['quantity'] ?? null) === '1', 'Manual-renewal checkout must contain one product');
+    expect(!isset($paymentQuery['subscription']), 'Manual-renewal checkout must not require a Prodamus subscription id');
 
     $webhook = [
         'order_id' => $providerOrderId,
@@ -105,6 +108,21 @@ try {
     ];
     expect($subscriptions->handleProdamusWebhook($webhook) === 'activated_or_renewed', 'Payment must activate access');
     expect($subscriptions->handleProdamusWebhook($webhook) === 'duplicate', 'Webhook handling must be idempotent');
+
+    $wrongAmountCheckout = $subscriptions->createCheckout([
+        'full_name' => 'Мария Петрова',
+        'phone' => '+79990002233',
+        'email' => 'maria@example.test',
+        'telegram_username' => '@maria_test',
+    ]);
+    parse_str((string) parse_url($wrongAmountCheckout['payment_url'], PHP_URL_QUERY), $wrongAmountQuery);
+    $wrongAmountWebhook = [
+        'order_id' => (string) $wrongAmountQuery['order_id'],
+        'payment_status' => 'success',
+        'sum' => '49.90',
+        'date' => '2026-09-30 12:00:00',
+    ];
+    expect($subscriptions->handleProdamusWebhook($wrongAmountWebhook) === 'ignored_amount_mismatch', 'Wrong payment amount must not activate access');
 
     $beforeJoin = $database->pdo()->query('SELECT managed_by_bot FROM subscriptions')->fetchColumn();
     expect((int) $beforeJoin === 0, 'A paid customer is not managed until the unique invite is used');
