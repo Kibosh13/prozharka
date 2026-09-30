@@ -57,3 +57,108 @@ if ("IntersectionObserver" in window) {
 
   trackedSections.forEach((section) => sectionObserver.observe(section));
 }
+
+const checkoutForm = document.querySelector("[data-checkout-form]");
+
+if (checkoutForm) {
+  const checkoutButton = checkoutForm.querySelector("button[type='submit']");
+  const checkoutStatus = checkoutForm.querySelector("[data-checkout-status]");
+
+  checkoutForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    if (!checkoutForm.reportValidity()) return;
+
+    checkoutButton.disabled = true;
+    checkoutButton.textContent = "Готовим оплату…";
+    checkoutStatus.textContent = "";
+
+    const form = new FormData(checkoutForm);
+    const payload = {
+      full_name: form.get("full_name"),
+      phone: form.get("phone"),
+      email: form.get("email"),
+      telegram_username: form.get("telegram_username"),
+    };
+
+    try {
+      const response = await fetch("./api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.payment_url) {
+        throw new Error(data.error || "Не удалось открыть оплату");
+      }
+      window.location.assign(data.payment_url);
+    } catch (error) {
+      checkoutStatus.textContent = error.message || "Временная ошибка. Попробуйте ещё раз.";
+      checkoutButton.disabled = false;
+      checkoutButton.textContent = "Перейти к оплате";
+    }
+  });
+}
+
+const paymentStatus = document.querySelector("[data-payment-status]");
+
+if (paymentStatus) {
+  const orderToken = new URLSearchParams(window.location.search).get("order");
+  const title = paymentStatus.querySelector("[data-payment-title]");
+  const message = paymentStatus.querySelector("[data-payment-message]");
+  const loader = paymentStatus.querySelector("[data-payment-loader]");
+  const invite = paymentStatus.querySelector("[data-payment-invite]");
+  let attempts = 0;
+
+  const showError = (text) => {
+    title.innerHTML = "Нужна<br />проверка.";
+    message.textContent = text;
+    loader.hidden = true;
+  };
+
+  const pollOrder = async () => {
+    if (!orderToken) {
+      showError("Не найден номер заказа. Вернитесь на сайт и повторите оформление.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`./api/orders/${encodeURIComponent(orderToken)}`, {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Заказ не найден");
+
+      if (data.status === "ready" && data.invite_link) {
+        title.innerHTML = "Добро<br />пожаловать.";
+        message.textContent = "Оплата подтверждена. Персональная ссылка готова — она рассчитана на одного участника.";
+        invite.href = data.invite_link;
+        invite.hidden = false;
+        loader.hidden = true;
+        return;
+      }
+
+      if (data.status === "preparing_access") {
+        title.innerHTML = "Оплата<br />получена.";
+        message.textContent = "Создаём персональную ссылку в Telegram-канал.";
+      }
+
+      attempts += 1;
+      if (attempts < 120) {
+        window.setTimeout(pollOrder, 2500);
+      } else {
+        showError("Оплата получена, но ссылка задерживается. Напишите в поддержку и укажите email из заказа.");
+      }
+    } catch (error) {
+      attempts += 1;
+      if (attempts < 12) {
+        window.setTimeout(pollOrder, 2500);
+      } else {
+        showError(error.message || "Не удалось проверить оплату.");
+      }
+    }
+  };
+
+  pollOrder();
+}
