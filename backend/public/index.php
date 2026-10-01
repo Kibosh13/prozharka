@@ -55,6 +55,8 @@ try {
             $chat = $update['channel_post']['chat']
                 ?? $update['my_chat_member']['chat']
                 ?? $update['chat_member']['chat']
+                ?? $update['message']['forward_origin']['chat']
+                ?? $update['message']['forward_from_chat']
                 ?? null;
             if (is_array($chat) && in_array((string) ($chat['type'] ?? ''), ['channel', 'supergroup'], true)) {
                 $candidate = [
