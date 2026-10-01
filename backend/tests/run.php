@@ -42,13 +42,26 @@ final class FakeTelegramClient extends TelegramClient
 
     public function getChatMember(string $channelId, int $userId): array
     {
-        return ['status' => 'administrator'];
+        return [
+            'status' => 'administrator',
+            'can_invite_users' => true,
+            'can_restrict_members' => true,
+        ];
     }
 
     public function sendMessage(int $chatId, string $text, ?array $replyMarkup = null): mixed
     {
-        $this->messages[] = [$chatId, $text];
+        $this->messages[] = [$chatId, $text, $replyMarkup];
         return true;
+    }
+
+    public function call(string $method, array $payload = []): mixed
+    {
+        return match ($method) {
+            'getMe' => ['id' => 777000, 'is_bot' => true],
+            'getChat' => ['id' => (int) ($payload['chat_id'] ?? 0), 'type' => 'supergroup', 'title' => 'Прожарка'],
+            default => parent::call($method, $payload),
+        };
     }
 }
 
@@ -98,6 +111,26 @@ try {
     $unboundConfig = new Config(array_replace($configValues, ['TELEGRAM_CHANNEL_ID' => '']));
     $unboundBot = new BotService($subscriptions, $telegram, $unboundConfig);
     expect($unboundBot->handle([
+        'update_id' => 900000,
+        'message' => [
+            'text' => '/bind',
+            'chat' => ['id' => 12345, 'type' => 'private'],
+            'from' => ['id' => 12345],
+        ],
+    ]) === 'bind_picker_sent', 'Private /bind must offer the official Telegram chat picker');
+    expect(($telegram->messages[0][2]['keyboard'][0][0]['request_chat']['request_id'] ?? 0) === 71001, 'Picker must request a group shared by Telegram');
+    expect($unboundBot->handle([
+        'update_id' => 900002,
+        'message' => [
+            'chat' => ['id' => 12345, 'type' => 'private'],
+            'from' => ['id' => 12345],
+            'chat_shared' => ['request_id' => 71001, 'chat_id' => -1009876543210, 'title' => 'Прожарка'],
+        ],
+    ]) === 'chat_bound_from_picker', 'A Telegram-shared supergroup must be bound after rights verification');
+    $sharedDiscovery = json_decode((string) file_get_contents($discoveryFile), true);
+    expect(($sharedDiscovery['id'] ?? '') === '-1009876543210', 'Shared supergroup id must be persisted');
+    @unlink($discoveryFile);
+    expect($unboundBot->handle([
         'update_id' => 900001,
         'message' => [
             'text' => '/bind',
@@ -107,7 +140,8 @@ try {
     ]) === 'chat_bound', 'An administrator must be able to bind a supergroup');
     $discovery = json_decode((string) file_get_contents($discoveryFile), true);
     expect(($discovery['id'] ?? '') === '-1009876543210', 'Bound supergroup id must be persisted');
-    expect(str_contains((string) ($telegram->messages[0][1] ?? ''), 'Группа привязана'), 'Binding must be confirmed in the group');
+    $lastBotMessage = $telegram->messages[array_key_last($telegram->messages)] ?? [];
+    expect(str_contains((string) ($lastBotMessage[1] ?? ''), 'Группа привязана'), 'Binding must be confirmed in the group');
     @unlink($discoveryFile);
 
     $signatureA = ProdamusHmac::sign(['b' => 2, 'a' => ['z' => 1, 'x' => 3]], 'secret');
