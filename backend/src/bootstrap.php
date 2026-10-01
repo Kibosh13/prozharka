@@ -26,7 +26,9 @@ $config = Config::load($projectRoot);
 date_default_timezone_set($config->get('APP_TIMEZONE', 'Europe/Moscow') ?? 'Europe/Moscow');
 
 $database = new Database($config->require('DATABASE_PATH'));
-$database->migrate($projectRoot . '/migrations/001_init.sql');
+foreach (glob($projectRoot . '/migrations/*.sql') ?: [] as $migrationFile) {
+    $database->migrate($migrationFile);
+}
 
 $paymentLinks = new PaymentLinkFactory($config);
 $subscriptions = new SubscriptionService($database, $config, $paymentLinks);
@@ -38,4 +40,3 @@ $bot = new BotService($subscriptions, $telegram, $config);
 $worker = new AccessWorker($database, $telegram, $subscriptions, $config);
 
 return compact('config', 'database', 'paymentLinks', 'subscriptions', 'telegram', 'bot', 'worker');
-

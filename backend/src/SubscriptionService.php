@@ -22,6 +22,7 @@ final class SubscriptionService
     public function createCheckout(array $input): array
     {
         $customer = $this->validatedCustomer($input);
+        $consent = $this->validatedConsent($input);
         if (!$this->paymentLinks->isConfigured()) {
             throw new RuntimeException('Оплата пока не подключена');
         }
@@ -37,6 +38,7 @@ final class SubscriptionService
             $orderId,
             $providerOrderId,
             $now,
+            $consent,
         ): array {
             $upsert = $pdo->prepare(
                 'INSERT INTO customers (full_name, phone, email, telegram_username, created_at, updated_at)
@@ -80,6 +82,24 @@ final class SubscriptionService
                 ':amount' => $order['amount'],
                 ':created_at' => $now,
                 ':updated_at' => $now,
+            ]);
+
+            $insertConsent = $pdo->prepare(
+                'INSERT INTO consent_records
+                 (order_id, personal_data_consent, offer_acceptance, privacy_version, consent_version,
+                  offer_version, cookie_choice, ip_address, user_agent, accepted_at)
+                 VALUES (:order_id, 1, 1, :privacy_version, :consent_version, :offer_version,
+                  :cookie_choice, :ip_address, :user_agent, :accepted_at)'
+            );
+            $insertConsent->execute([
+                ':order_id' => $orderId,
+                ':privacy_version' => $this->config->get('PRIVACY_VERSION', '30.09.2026'),
+                ':consent_version' => $this->config->get('PERSONAL_DATA_CONSENT_VERSION', '30.09.2026'),
+                ':offer_version' => $this->config->get('OFFER_VERSION', '26.06.2026'),
+                ':cookie_choice' => $consent['cookie_choice'],
+                ':ip_address' => $consent['ip_address'] !== '' ? $consent['ip_address'] : null,
+                ':user_agent' => $consent['user_agent'] !== '' ? $consent['user_agent'] : null,
+                ':accepted_at' => $now,
             ]);
 
             return ['order' => $order, 'customer' => $storedCustomer];
@@ -405,6 +425,25 @@ final class SubscriptionService
             'phone' => $phone,
             'email' => $email,
             'telegram_username' => $telegram,
+        ];
+    }
+
+    private function validatedConsent(array $input): array
+    {
+        if (($input['personal_data_consent'] ?? false) !== true
+            || ($input['offer_acceptance'] ?? false) !== true) {
+            throw new RuntimeException('Подтвердите согласие с документами');
+        }
+
+        $cookieChoice = strtolower(trim((string) ($input['cookie_choice'] ?? 'unset')));
+        if (!in_array($cookieChoice, ['all', 'necessary', 'unset'], true)) {
+            $cookieChoice = 'unset';
+        }
+
+        return [
+            'cookie_choice' => $cookieChoice,
+            'ip_address' => substr(trim((string) ($input['_consent_ip'] ?? '')), 0, 64),
+            'user_agent' => substr(trim((string) ($input['_consent_user_agent'] ?? '')), 0, 500),
         ];
     }
 

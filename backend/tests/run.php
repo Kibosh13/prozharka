@@ -63,12 +63,17 @@ $configValues = [
     'TELEGRAM_CHANNEL_ID' => '-1001234567890',
     'DRY_RUN' => '0',
     'ACCESS_REMOVAL_ENABLED' => '0',
+    'PRIVACY_VERSION' => '30.09.2026',
+    'PERSONAL_DATA_CONSENT_VERSION' => '30.09.2026',
+    'OFFER_VERSION' => '26.06.2026',
 ];
 $config = new Config($configValues);
 
 try {
     $database = new Database($databasePath);
-    $database->migrate(dirname(__DIR__) . '/migrations/001_init.sql');
+    foreach (glob(dirname(__DIR__) . '/migrations/*.sql') ?: [] as $migrationFile) {
+        $database->migrate($migrationFile);
+    }
     $links = new PaymentLinkFactory($config);
     $subscriptions = new SubscriptionService($database, $config, $links);
     $telegram = new FakeTelegramClient();
@@ -83,9 +88,18 @@ try {
         'phone' => '+79990001122',
         'email' => 'anna@example.test',
         'telegram_username' => '@anna_test',
+        'personal_data_consent' => true,
+        'offer_acceptance' => true,
+        'cookie_choice' => 'necessary',
+        '_consent_ip' => '127.0.0.1',
+        '_consent_user_agent' => 'prozharka-tests',
     ];
     $checkout = $subscriptions->createCheckout($customer);
     expect(str_starts_with($checkout['payment_url'], 'https://demo.payform.test/'), 'Checkout must return a Prodamus URL');
+    $storedConsent = $database->pdo()->query('SELECT * FROM consent_records LIMIT 1')->fetch();
+    expect(is_array($storedConsent), 'Checkout must store consent evidence');
+    expect(($storedConsent['privacy_version'] ?? '') === '30.09.2026', 'Consent must store the configured document versions');
+    expect(($storedConsent['ip_address'] ?? '') === '127.0.0.1', 'Consent must store the server-supplied IP address');
 
     parse_str((string) parse_url($checkout['payment_url'], PHP_URL_QUERY), $paymentQuery);
     $providerOrderId = (string) ($paymentQuery['order_id'] ?? '');
@@ -114,6 +128,11 @@ try {
         'phone' => '+79990002233',
         'email' => 'maria@example.test',
         'telegram_username' => '@maria_test',
+        'personal_data_consent' => true,
+        'offer_acceptance' => true,
+        'cookie_choice' => 'all',
+        '_consent_ip' => '127.0.0.2',
+        '_consent_user_agent' => 'prozharka-tests',
     ]);
     parse_str((string) parse_url($wrongAmountCheckout['payment_url'], PHP_URL_QUERY), $wrongAmountQuery);
     $wrongAmountWebhook = [

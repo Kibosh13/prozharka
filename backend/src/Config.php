@@ -68,6 +68,9 @@ final class Config
             'ACCESS_REMOVAL_ENABLED' => '0',
             'PRODAMUS_SYSTEM_CODE' => 'prozharka',
             'DATABASE_PATH' => $projectRoot . '/var/app.sqlite',
+            'PRIVACY_VERSION' => '30.09.2026',
+            'PERSONAL_DATA_CONSENT_VERSION' => '30.09.2026',
+            'OFFER_VERSION' => '26.06.2026',
         ]);
     }
 

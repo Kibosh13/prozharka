@@ -28,7 +28,10 @@ try {
     }
 
     if ($method === 'POST' && $path === '/checkout') {
-        Http::json(['ok' => true] + $subscriptions->createCheckout(Http::jsonBody()), 201);
+        $checkoutInput = Http::jsonBody();
+        $checkoutInput['_consent_ip'] = substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 64);
+        $checkoutInput['_consent_user_agent'] = substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 500);
+        Http::json(['ok' => true] + $subscriptions->createCheckout($checkoutInput), 201);
     }
 
     if ($method === 'GET' && preg_match('#^/orders/([A-Za-z0-9_-]{20,200})$#', $path, $matches)) {
