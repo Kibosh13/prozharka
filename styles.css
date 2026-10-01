@@ -1639,7 +1639,7 @@ a {
   .about h2,
   .faq h2,
   .buy h2 {
-    font-size: clamp(3rem, 13vw, 5rem);
+    font-size: clamp(2.35rem, 12vw, 5rem);
     line-height: 0.92;
   }
 
@@ -1674,6 +1674,10 @@ a {
 
   .program-grid {
     grid-template-columns: 1fr;
+  }
+
+  .program-card h3 {
+    font-size: clamp(2rem, 10vw, 3rem);
   }
 
   .program-card,
