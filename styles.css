@@ -1645,10 +1645,12 @@ a {
 
   .inside .section-heading h2 {
     max-width: 100%;
-    font-size: clamp(2.55rem, 10.8vw, 4.15rem);
+    font-size: clamp(1.65rem, 8.5vw, 4.15rem);
     line-height: 0.94;
     letter-spacing: -0.07em;
-    overflow-wrap: break-word;
+    overflow-wrap: normal;
+    word-break: normal;
+    white-space: nowrap;
   }
 
   .statement-rule {
@@ -1807,6 +1809,51 @@ a {
 }
 
 @media (max-width: 560px) {
+  .payment-shell {
+    min-height: 100svh;
+    gap: 28px;
+    padding: 20px 18px;
+  }
+
+  .payment-brand {
+    font-size: 2rem;
+  }
+
+  .payment-card {
+    align-self: end;
+    width: 100%;
+    margin: 32px 0 0;
+    padding: 24px 20px;
+  }
+
+  .payment-card h1 {
+    max-width: 100%;
+    margin: 34px 0 18px;
+    font-size: clamp(2.15rem, 11vw, 2.8rem);
+    line-height: 0.9;
+    letter-spacing: -0.065em;
+  }
+
+  .payment-message {
+    font-size: 1.05rem;
+    line-height: 1.35;
+  }
+
+  .payment-loader {
+    margin: 32px 0 20px;
+  }
+
+  .payment-invite {
+    min-height: 54px;
+    margin-top: 28px;
+  }
+
+  .payment-help {
+    margin-top: 20px;
+    font-size: 0.7rem;
+    line-height: 1.4;
+  }
+
   .site-header {
     gap: 2px;
     padding-left: 10px;
