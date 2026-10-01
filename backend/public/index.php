@@ -51,14 +51,37 @@ try {
             Http::json(['ok' => false, 'error' => 'invalid_secret'], 401);
         }
         $update = Http::jsonBody();
+        $message = is_array($update['message'] ?? null) ? $update['message'] : [];
+        $forwardOrigin = is_array($message['forward_origin'] ?? null) ? $message['forward_origin'] : [];
+        $forwardChat = is_array($forwardOrigin['chat'] ?? null)
+            ? $forwardOrigin['chat']
+            : (is_array($message['forward_from_chat'] ?? null) ? $message['forward_from_chat'] : []);
+        $diagnostic = [
+            'update_id' => (int) ($update['update_id'] ?? 0),
+            'update_types' => array_values(array_diff(array_keys($update), ['update_id'])),
+            'message_chat_type' => (string) ($message['chat']['type'] ?? ''),
+            'message_kind' => isset($message['text'])
+                ? (str_starts_with(trim((string) $message['text']), '/') ? 'command' : 'text')
+                : (isset($message['photo']) ? 'photo' : (isset($message['video']) ? 'video' : 'other')),
+            'forward_origin_type' => (string) ($forwardOrigin['type'] ?? ''),
+            'forward_chat_id' => (string) ($forwardChat['id'] ?? ''),
+            'forward_chat_type' => (string) ($forwardChat['type'] ?? ''),
+            'received_at' => gmdate(DATE_ATOM),
+        ];
+        file_put_contents(
+            dirname(__DIR__) . '/var/telegram-last-update.json',
+            json_encode($diagnostic, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            LOCK_EX,
+        );
         if (trim((string) $config->get('TELEGRAM_CHANNEL_ID', '')) === '') {
             $chat = $update['channel_post']['chat']
+                ?? $update['message']['chat']
                 ?? $update['my_chat_member']['chat']
                 ?? $update['chat_member']['chat']
                 ?? $update['message']['forward_origin']['chat']
                 ?? $update['message']['forward_from_chat']
                 ?? null;
-            if (is_array($chat) && in_array((string) ($chat['type'] ?? ''), ['channel', 'supergroup'], true)) {
+            if (is_array($chat) && in_array((string) ($chat['type'] ?? ''), ['channel', 'supergroup', 'group'], true)) {
                 $candidate = [
                     'id' => (string) ($chat['id'] ?? ''),
                     'type' => (string) ($chat['type'] ?? ''),

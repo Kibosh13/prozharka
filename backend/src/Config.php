@@ -45,6 +45,19 @@ final class Config
             }
         }
 
+        if (trim((string) ($values['TELEGRAM_CHANNEL_ID'] ?? '')) === '') {
+            $discoveryFile = $projectRoot . '/var/channel-discovery.json';
+            $discovery = is_file($discoveryFile)
+                ? json_decode((string) file_get_contents($discoveryFile), true)
+                : null;
+            $chatId = is_array($discovery) ? trim((string) ($discovery['id'] ?? '')) : '';
+            $chatType = is_array($discovery) ? (string) ($discovery['type'] ?? '') : '';
+            if (preg_match('/^-\d+$/', $chatId)
+                && in_array($chatType, ['channel', 'supergroup', 'group'], true)) {
+                $values['TELEGRAM_CHANNEL_ID'] = $chatId;
+            }
+        }
+
         return new self($values + [
             'APP_ENV' => 'production',
             'APP_TIMEZONE' => 'Europe/Moscow',
@@ -84,4 +97,3 @@ final class Config
         return in_array($value, ['1', 'true', 'yes', 'on'], true);
     }
 }
-
