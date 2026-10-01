@@ -22,9 +22,9 @@
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%239a6a48'/%3E%3Cpath d='M19 16h18c8 0 13 4 13 11s-5 12-14 12H28v10H19V16Zm9 8v8h7c4 0 6-1 6-4s-2-4-6-4h-7Z' fill='%23f5eee5'/%3E%3C/svg%3E"
     />
-    <link rel="stylesheet" href="./styles.css?v=10" />
+    <link rel="stylesheet" href="./styles.css?v=12" />
   </head>
-  <body>
+  <body data-site-root="./">
     <a class="skip-link" href="#main">К содержанию</a>
     <div class="scroll-progress" aria-hidden="true"><span></span></div>
 
@@ -208,11 +208,11 @@
         <div class="faq-list reveal">
           <details>
             <summary>Что делать после оплаты?<span>+</span></summary>
-            <p>После подключения оплаты здесь появится точная инструкция по входу в закрытый Telegram-канал.</p>
+            <p>После подтверждения оплаты на сайте появится персональная ссылка в закрытый Telegram-канал. Ссылка рассчитана на одного участника.</p>
           </details>
           <details>
             <summary>Сколько длится подписка?<span>+</span></summary>
-            <p>Условия и срок подписки добавим после финального согласования формата участия.</p>
+            <p>Подписка действует один месяц. При продлении доступ сохраняется автоматически — повторно входить в канал не нужно.</p>
           </details>
           <details>
             <summary>Мне подходит, если я новичок?<span>+</span></summary>
@@ -236,8 +236,40 @@
             <span>Стоимость подписки</span>
             <strong>4 990 ₽</strong>
           </div>
-          <button class="button button--disabled" type="button" disabled>Оплата будет подключена</button>
-          <p class="buy-note">Платёжная ссылка появится после подключения оплаты.</p>
+          <form class="checkout-form" data-checkout-form novalidate>
+            <div class="checkout-fields">
+              <label>
+                <span>Имя и фамилия</span>
+                <input name="full_name" type="text" autocomplete="name" placeholder="Анна Иванова" minlength="3" maxlength="150" required />
+              </label>
+              <label>
+                <span>Телефон</span>
+                <input name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+7 999 000-00-00" required />
+              </label>
+              <label>
+                <span>Электронная почта</span>
+                <input name="email" type="email" autocomplete="email" placeholder="name@example.ru" required />
+              </label>
+              <label>
+                <span>Ваш Telegram</span>
+                <input name="telegram_username" type="text" autocomplete="off" placeholder="@username" pattern="^@[A-Za-z0-9_]{5,32}$" required />
+              </label>
+            </div>
+            <label class="checkout-consent">
+              <input name="personal_data_consent" type="checkbox" required />
+              <span>
+                Даю <a href="./consent/" target="_blank" rel="noopener">согласие на обработку персональных данных</a>
+                и ознакомлена с <a href="./privacy/" target="_blank" rel="noopener">Политикой обработки персональных данных</a>
+              </span>
+            </label>
+            <label class="checkout-consent">
+              <input name="offer_acceptance" type="checkbox" required />
+              <span>Принимаю условия <a href="./offer/" target="_blank" rel="noopener">публичной оферты</a></span>
+            </label>
+            <button class="button checkout-submit" type="submit">Перейти к оплате</button>
+            <p class="checkout-status" data-checkout-status aria-live="polite"></p>
+          </form>
+          <p class="buy-note">После успешной оплаты персональная ссылка в канал появится на странице подтверждения.</p>
         </div>
       </section>
     </main>
@@ -248,12 +280,14 @@
         <span>тренировки · питание · растяжка</span>
       </div>
       <div class="footer-links">
-        <a href="#legal" aria-disabled="true">Политика конфиденциальности</a>
-        <span>Реквизиты будут добавлены</span>
+        <a href="./privacy/">Политика обработки данных</a>
+        <a href="./consent/">Согласие на обработку данных</a>
+        <a href="./offer/">Публичная оферта</a>
+        <button type="button" data-cookie-settings>Настройки cookies</button>
       </div>
       <p>© <span data-year></span> «Прожарка»</p>
     </footer>
 
-    <script src="./script.js?v=7"></script>
+    <script src="./script.js?v=9"></script>
   </body>
 </html>
