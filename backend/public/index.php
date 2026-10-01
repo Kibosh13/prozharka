@@ -76,30 +76,6 @@ try {
             json_encode($diagnostic, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             LOCK_EX,
         );
-        if (trim((string) $config->get('TELEGRAM_CHANNEL_ID', '')) === '') {
-            $chat = $update['channel_post']['chat']
-                ?? $update['message']['chat']
-                ?? $update['my_chat_member']['chat']
-                ?? $update['chat_member']['chat']
-                ?? $update['message']['forward_origin']['chat']
-                ?? $update['message']['forward_from_chat']
-                ?? null;
-            if (is_array($chat) && in_array((string) ($chat['type'] ?? ''), ['channel', 'supergroup', 'group'], true)) {
-                $candidate = [
-                    'id' => (string) ($chat['id'] ?? ''),
-                    'type' => (string) ($chat['type'] ?? ''),
-                    'title' => (string) ($chat['title'] ?? ''),
-                    'seen_at' => gmdate(DATE_ATOM),
-                ];
-                if ($candidate['id'] !== '') {
-                    file_put_contents(
-                        dirname(__DIR__) . '/var/channel-discovery.json',
-                        json_encode($candidate, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-                        LOCK_EX,
-                    );
-                }
-            }
-        }
         Http::json(['ok' => true, 'result' => $bot->handle($update)]);
     }
 

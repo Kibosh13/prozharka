@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Prozharka\AccessWorker;
+use Prozharka\BotService;
 use Prozharka\Config;
 use Prozharka\Database;
 use Prozharka\PaymentLinkFactory;
@@ -17,10 +18,12 @@ require_once dirname(__DIR__) . '/src/TelegramClient.php';
 require_once dirname(__DIR__) . '/src/PaymentLinkFactory.php';
 require_once dirname(__DIR__) . '/src/SubscriptionService.php';
 require_once dirname(__DIR__) . '/src/AccessWorker.php';
+require_once dirname(__DIR__) . '/src/BotService.php';
 
 final class FakeTelegramClient extends TelegramClient
 {
     public array $removed = [];
+    public array $messages = [];
 
     public function __construct()
     {
@@ -35,6 +38,17 @@ final class FakeTelegramClient extends TelegramClient
     public function removeMember(string $channelId, int $userId): void
     {
         $this->removed[] = [$channelId, $userId];
+    }
+
+    public function getChatMember(string $channelId, int $userId): array
+    {
+        return ['status' => 'administrator'];
+    }
+
+    public function sendMessage(int $chatId, string $text, ?array $replyMarkup = null): mixed
+    {
+        $this->messages[] = [$chatId, $text];
+        return true;
     }
 }
 
@@ -78,6 +92,23 @@ try {
     $subscriptions = new SubscriptionService($database, $config, $links);
     $telegram = new FakeTelegramClient();
     $worker = new AccessWorker($database, $telegram, $subscriptions, $config);
+
+    $discoveryFile = dirname($databasePath) . '/channel-discovery.json';
+    @unlink($discoveryFile);
+    $unboundConfig = new Config(array_replace($configValues, ['TELEGRAM_CHANNEL_ID' => '']));
+    $unboundBot = new BotService($subscriptions, $telegram, $unboundConfig);
+    expect($unboundBot->handle([
+        'update_id' => 900001,
+        'message' => [
+            'text' => '/bind',
+            'chat' => ['id' => -1009876543210, 'type' => 'supergroup', 'title' => 'Прожарка'],
+            'from' => ['id' => 12345],
+        ],
+    ]) === 'chat_bound', 'An administrator must be able to bind a supergroup');
+    $discovery = json_decode((string) file_get_contents($discoveryFile), true);
+    expect(($discovery['id'] ?? '') === '-1009876543210', 'Bound supergroup id must be persisted');
+    expect(str_contains((string) ($telegram->messages[0][1] ?? ''), 'Группа привязана'), 'Binding must be confirmed in the group');
+    @unlink($discoveryFile);
 
     $signatureA = ProdamusHmac::sign(['b' => 2, 'a' => ['z' => 1, 'x' => 3]], 'secret');
     $signatureB = ProdamusHmac::sign(['a' => ['x' => 3, 'z' => 1], 'b' => 2], 'secret');

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Prozharka;
 
+use RuntimeException;
+
 final class BotService
 {
     public function __construct(
@@ -24,7 +26,13 @@ final class BotService
             return $this->handleMembershipChange($update['chat_member']);
         }
 
-        $message = $update['message'] ?? null;
+        $message = is_array($update['message'] ?? null)
+            ? $update['message']
+            : (is_array($update['channel_post'] ?? null) ? $update['channel_post'] : null);
+        if (is_array($message) && preg_match('/^\/bind(?:@[A-Za-z0-9_]+)?(?:\s|$)/u', trim((string) ($message['text'] ?? '')))) {
+            return $this->handleBind($message, isset($update['channel_post']));
+        }
+
         if (is_array($message) && str_starts_with(trim((string) ($message['text'] ?? '')), '/start')) {
             $chatId = (int) ($message['chat']['id'] ?? 0);
             if ($chatId > 0) {
@@ -37,6 +45,52 @@ final class BotService
         }
 
         return 'ignored';
+    }
+
+    private function handleBind(array $message, bool $isChannelPost): string
+    {
+        $chat = is_array($message['chat'] ?? null) ? $message['chat'] : [];
+        $chatId = (int) ($chat['id'] ?? 0);
+        $chatType = (string) ($chat['type'] ?? '');
+        if ($chatId >= 0 || !in_array($chatType, ['group', 'supergroup', 'channel'], true)) {
+            return 'bind_ignored_outside_group';
+        }
+
+        $configuredChannel = trim((string) $this->config->get('TELEGRAM_CHANNEL_ID', ''));
+        if ($configuredChannel !== '' && $configuredChannel !== (string) $chatId) {
+            $this->telegram->sendMessage($chatId, 'Бот уже привязан к другой группе.');
+            return 'bind_rejected_already_configured';
+        }
+
+        if (!$isChannelPost) {
+            $senderId = (int) ($message['from']['id'] ?? 0);
+            if ($senderId <= 0) {
+                return 'bind_rejected_without_sender';
+            }
+            $member = $this->telegram->getChatMember((string) $chatId, $senderId);
+            if (!in_array((string) ($member['status'] ?? ''), ['administrator', 'creator'], true)) {
+                $this->telegram->sendMessage($chatId, 'Привязать бота может только администратор группы.');
+                return 'bind_rejected_not_admin';
+            }
+        }
+
+        $discoveryFile = dirname($this->config->require('DATABASE_PATH')) . '/channel-discovery.json';
+        $encoded = json_encode([
+            'id' => (string) $chatId,
+            'type' => $chatType,
+            'title' => (string) ($chat['title'] ?? ''),
+            'seen_at' => gmdate(DATE_ATOM),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($encoded === false || file_put_contents($discoveryFile, $encoded, LOCK_EX) === false) {
+            throw new RuntimeException('Не удалось сохранить привязку группы');
+        }
+        @chmod($discoveryFile, 0600);
+
+        $this->telegram->sendMessage(
+            $chatId,
+            'Группа привязана к «Прожарке». Бот готов выдавать персональные ссылки после оплаты.'
+        );
+        return 'chat_bound';
     }
 
     private function handleMembershipChange(array $change): string
@@ -64,4 +118,3 @@ final class BotService
             : 'ignored_unknown_invite';
     }
 }
-
