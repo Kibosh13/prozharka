@@ -33,6 +33,12 @@ final class AccessWorker
                 break;
             }
 
+            if (trim((string) $this->config->get('TELEGRAM_CHANNEL_ID', '')) === '') {
+                $this->defer((int) $job['id'], 'Telegram chat auto-discovery is pending');
+                $deferred++;
+                continue;
+            }
+
             try {
                 $result = match ($job['job_type']) {
                     'issue_invite' => $this->issueInvite($job),
@@ -217,4 +223,3 @@ final class AccessWorker
         return (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format(DATE_ATOM);
     }
 }
-
