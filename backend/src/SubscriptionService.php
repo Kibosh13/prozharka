@@ -146,7 +146,9 @@ final class SubscriptionService
         $fingerprint = hash('sha256', json_encode($this->sortRecursively($payload), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '');
         $subscriptionPayload = is_array($payload['subscription'] ?? null) ? $payload['subscription'] : [];
         $providerSubscriptionId = trim((string) ($subscriptionPayload['id'] ?? ''));
-        $providerOrderId = trim((string) ($payload['order_id'] ?? $payload['order_num'] ?? ''));
+        // Prodamus sends its internal UUID in `order_id` and the merchant's
+        // order number in `order_num`. Our checkout id is the latter.
+        $providerOrderId = trim((string) ($payload['order_num'] ?? $payload['order_id'] ?? ''));
         $paymentStatus = strtolower(trim((string) ($payload['payment_status'] ?? '')));
         $actionCode = strtolower(trim((string) ($subscriptionPayload['action_code'] ?? '')));
         $lastAttempt = strtolower(trim((string) ($subscriptionPayload['last_attempt'] ?? '')));
@@ -181,7 +183,28 @@ final class SubscriptionService
                 ':received_at' => $this->now(),
             ]);
             if ($insertEvent->rowCount() === 0) {
-                return 'duplicate';
+                $knownEvent = $pdo->prepare('SELECT order_id FROM payment_events WHERE fingerprint = :fingerprint LIMIT 1');
+                $knownEvent->execute([':fingerprint' => $fingerprint]);
+                $knownOrderId = $knownEvent->fetchColumn();
+                if (!is_array($order) || ($knownOrderId !== false && $knownOrderId !== null && $knownOrderId !== '')) {
+                    return 'duplicate';
+                }
+
+                // A previous delivery may have been stored before order_num
+                // support was added. Attach it to the recovered order and
+                // continue the normal activation path exactly once.
+                $recoverEvent = $pdo->prepare(
+                    'UPDATE payment_events SET provider_order_id = :provider_order_id, order_id = :order_id
+                     WHERE fingerprint = :fingerprint AND order_id IS NULL'
+                );
+                $recoverEvent->execute([
+                    ':provider_order_id' => $providerOrderId,
+                    ':order_id' => $order['id'],
+                    ':fingerprint' => $fingerprint,
+                ]);
+                if ($recoverEvent->rowCount() === 0) {
+                    return 'duplicate';
+                }
             }
 
             if (!is_array($order)) {

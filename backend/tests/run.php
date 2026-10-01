@@ -174,7 +174,8 @@ try {
     expect(!isset($paymentQuery['subscription']), 'Manual-renewal checkout must not require a Prodamus subscription id');
 
     $webhook = [
-        'order_id' => $providerOrderId,
+        'order_id' => '019ea75c-b41c-7b83-bddd-7369a7071f97',
+        'order_num' => $providerOrderId,
         'payment_status' => 'success',
         'sum' => '4990.00',
         'date' => '2026-09-30 12:00:00',
@@ -201,7 +202,8 @@ try {
     ]);
     parse_str((string) parse_url($wrongAmountCheckout['payment_url'], PHP_URL_QUERY), $wrongAmountQuery);
     $wrongAmountWebhook = [
-        'order_id' => (string) $wrongAmountQuery['order_id'],
+        'order_id' => '019ea75c-b41c-7b83-bddd-7369a7071f98',
+        'order_num' => (string) $wrongAmountQuery['order_id'],
         'payment_status' => 'success',
         'sum' => '49.90',
         'date' => '2026-09-30 12:00:00',
@@ -226,7 +228,8 @@ try {
     $renewal = $subscriptions->createCheckout($customer);
     parse_str((string) parse_url($renewal['payment_url'], PHP_URL_QUERY), $renewalQuery);
     $renewalWebhook = $webhook;
-    $renewalWebhook['order_id'] = (string) $renewalQuery['order_id'];
+    $renewalWebhook['order_id'] = '019ea75c-b41c-7b83-bddd-7369a7071f99';
+    $renewalWebhook['order_num'] = (string) $renewalQuery['order_id'];
     $renewalWebhook['date'] = '2026-10-30 12:00:00';
     $renewalWebhook['subscription']['date_next_payment'] = '2026-11-30 12:00:00';
     expect($subscriptions->handleProdamusWebhook($renewalWebhook) === 'activated_or_renewed', 'Renewal must refresh access');
@@ -248,7 +251,8 @@ try {
     $lastMinuteRenewal = $subscriptions->createCheckout($customer);
     parse_str((string) parse_url($lastMinuteRenewal['payment_url'], PHP_URL_QUERY), $lastMinuteQuery);
     $lastMinuteWebhook = $webhook;
-    $lastMinuteWebhook['order_id'] = (string) $lastMinuteQuery['order_id'];
+    $lastMinuteWebhook['order_id'] = '019ea75c-b41c-7b83-bddd-7369a7071fa0';
+    $lastMinuteWebhook['order_num'] = (string) $lastMinuteQuery['order_id'];
     $lastMinuteWebhook['date'] = '2026-11-30 12:00:00';
     $lastMinuteWebhook['subscription']['date_next_payment'] = '2030-12-30 12:00:00';
     $subscriptions->handleProdamusWebhook($lastMinuteWebhook);
