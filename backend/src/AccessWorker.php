@@ -95,8 +95,11 @@ final class AccessWorker
         }
 
         $query = $this->database->pdo()->prepare(
-            'SELECT o.*, c.telegram_user_id
-             FROM orders o JOIN customers c ON c.id = o.customer_id
+            'SELECT o.*, c.telegram_user_id, s.status AS subscription_status,
+                    s.expires_at AS subscription_expires_at
+             FROM orders o
+             JOIN customers c ON c.id = o.customer_id
+             LEFT JOIN subscriptions s ON s.customer_id = o.customer_id
              WHERE o.id = :order_id AND o.customer_id = :customer_id LIMIT 1'
         );
         $query->execute([':order_id' => $job['order_id'], ':customer_id' => $job['customer_id']]);
@@ -104,12 +107,29 @@ final class AccessWorker
         if (!is_array($order) || $order['status'] !== 'paid') {
             throw new RuntimeException('Paid order not found for invite');
         }
-        if (!empty($order['invite_link'])) {
-            return 'done';
+        $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        if (!empty($order['invite_link']) && !empty($order['invite_expires_at'])) {
+            try {
+                if (new DateTimeImmutable((string) $order['invite_expires_at']) > $now) {
+                    return 'done';
+                }
+            } catch (\Throwable) {
+                // An invalid legacy expiry is replaced below.
+            }
         }
 
-        $expiresAt = (new DateTimeImmutable('now', new DateTimeZone('UTC')))
-            ->add(new DateInterval('PT' . max(1, $this->config->int('INVITE_LINK_TTL_HOURS', 24)) . 'H'));
+        $expiresAt = $now->add(
+            new DateInterval('PT' . max(1, $this->config->int('INVITE_LINK_TTL_HOURS', 720)) . 'H')
+        );
+        if (!empty($order['subscription_expires_at'])) {
+            $subscriptionExpiresAt = new DateTimeImmutable((string) $order['subscription_expires_at']);
+            if ($subscriptionExpiresAt <= $now) {
+                throw new RuntimeException('Subscription expired before invite could be issued');
+            }
+            if ($subscriptionExpiresAt < $expiresAt) {
+                $expiresAt = $subscriptionExpiresAt;
+            }
+        }
         $invite = $this->telegram->createSingleUseInvite(
             $this->config->require('TELEGRAM_CHANNEL_ID'),
             (int) $job['customer_id'],

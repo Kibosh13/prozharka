@@ -119,8 +119,11 @@ final class SubscriptionService
         }
 
         $statement = $this->database->pdo()->prepare(
-            'SELECT status, invite_link, invite_expires_at, paid_at
-             FROM orders WHERE public_token_hash = :token_hash LIMIT 1'
+            'SELECT o.id, o.customer_id, o.status, o.invite_link, o.invite_expires_at, o.paid_at,
+                    s.status AS subscription_status, s.expires_at AS subscription_expires_at
+             FROM orders o
+             LEFT JOIN subscriptions s ON s.customer_id = o.customer_id
+             WHERE o.public_token_hash = :token_hash LIMIT 1'
         );
         $statement->execute([':token_hash' => hash('sha256', $publicToken)]);
         $order = $statement->fetch();
@@ -128,11 +131,25 @@ final class SubscriptionService
             throw new RuntimeException('Order not found');
         }
 
-        $state = match (true) {
-            $order['status'] !== 'paid' => (string) $order['status'],
-            !empty($order['invite_link']) => 'ready',
-            default => 'preparing_access',
-        };
+        $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        $subscriptionExpiresAt = $this->dateOrNull((string) ($order['subscription_expires_at'] ?? ''));
+        $inviteExpiresAt = $this->dateOrNull((string) ($order['invite_expires_at'] ?? ''));
+
+        if ($order['status'] !== 'paid') {
+            $state = (string) $order['status'];
+        } elseif ($subscriptionExpiresAt !== null && $subscriptionExpiresAt <= $now) {
+            $state = 'access_expired';
+        } elseif (!empty($order['invite_link']) && $inviteExpiresAt !== null && $inviteExpiresAt > $now) {
+            $state = 'ready';
+        } else {
+            $this->enqueueUniqueJob(
+                $this->database->pdo(),
+                'issue_invite',
+                (int) $order['customer_id'],
+                (string) $order['id'],
+            );
+            $state = 'preparing_access';
+        }
 
         return [
             'status' => $state,
@@ -493,6 +510,19 @@ final class SubscriptionService
         try {
             return (new DateTimeImmutable($value, new DateTimeZone($this->config->get('APP_TIMEZONE', 'Europe/Moscow') ?? 'Europe/Moscow')))
                 ->setTimezone(new DateTimeZone('UTC'))->format(DATE_ATOM);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function dateOrNull(string $value): ?DateTimeImmutable
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+        try {
+            return new DateTimeImmutable($value, new DateTimeZone('UTC'));
         } catch (\Throwable) {
             return null;
         }

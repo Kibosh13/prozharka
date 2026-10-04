@@ -24,6 +24,7 @@ final class FakeTelegramClient extends TelegramClient
 {
     public array $removed = [];
     public array $messages = [];
+    public array $invites = [];
 
     public function __construct()
     {
@@ -32,7 +33,9 @@ final class FakeTelegramClient extends TelegramClient
 
     public function createSingleUseInvite(string $channelId, int $userId, int $expiresAt): string
     {
-        return 'https://t.me/+test-' . $userId . '-' . $expiresAt;
+        $invite = 'https://t.me/+test-' . $userId . '-' . (count($this->invites) + 1);
+        $this->invites[] = [$channelId, $userId, $expiresAt, $invite];
+        return $invite;
     }
 
     public function removeMember(string $channelId, int $userId): void
@@ -86,7 +89,7 @@ $configValues = [
     'SUBSCRIPTION_PRICE' => '4990',
     'SUBSCRIPTION_DAYS' => '30',
     'ACCESS_GRACE_HOURS' => '24',
-    'INVITE_LINK_TTL_HOURS' => '24',
+    'INVITE_LINK_TTL_HOURS' => '720',
     'TELEGRAM_CHANNEL_ID' => '-1001234567890',
     'DRY_RUN' => '0',
     'ACCESS_REMOVAL_ENABLED' => '0',
@@ -217,6 +220,21 @@ try {
     expect($workerResult['done'] === 1, 'Worker must create one invite');
     $status = $subscriptions->orderStatus($checkout['order_token']);
     expect($status['status'] === 'ready' && str_starts_with((string) $status['invite_link'], 'https://t.me/+test-'), 'Paid order must expose a unique invite');
+
+    $firstInvite = (string) $status['invite_link'];
+    $database->pdo()->exec(
+        "UPDATE orders SET invite_expires_at = '2020-01-01T00:00:00+00:00' WHERE status = 'paid'"
+    );
+    $expiredStatus = $subscriptions->orderStatus($checkout['order_token']);
+    expect($expiredStatus['status'] === 'preparing_access', 'An expired Telegram link must be queued for replacement');
+    $replacementResult = $worker->run();
+    expect($replacementResult['done'] === 1, 'Worker must replace an expired Telegram link');
+    $status = $subscriptions->orderStatus($checkout['order_token']);
+    expect(
+        $status['status'] === 'ready' && $status['invite_link'] !== $firstInvite,
+        'Replacement invite must be returned without another payment'
+    );
+    expect(count($telegram->invites) === 2, 'Exactly one replacement invite must be created');
 
     expect($subscriptions->bindJoinedMember((string) $status['invite_link'], [
         'id' => 777001,

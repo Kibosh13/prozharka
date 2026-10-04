@@ -11,6 +11,7 @@ $container = require $backendRoot . '/src/bootstrap.php';
 $config = $container['config'];
 $subscriptions = $container['subscriptions'];
 $bot = $container['bot'];
+$worker = $container['worker'];
 
 $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 $requestPath = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
@@ -35,7 +36,12 @@ try {
     }
 
     if ($method === 'GET' && preg_match('#^/orders/([A-Za-z0-9_-]{20,200})$#', $path, $matches)) {
-        Http::json(['ok' => true] + $subscriptions->orderStatus($matches[1]));
+        $orderStatus = $subscriptions->orderStatus($matches[1]);
+        if (($orderStatus['status'] ?? '') === 'preparing_access') {
+            $worker->run(10);
+            $orderStatus = $subscriptions->orderStatus($matches[1]);
+        }
+        Http::json(['ok' => true] + $orderStatus);
     }
 
     if ($method === 'POST' && $path === '/webhooks/prodamus') {
@@ -44,7 +50,9 @@ try {
         if (empty($payload) || !ProdamusHmac::verify($payload, $config->require('PRODAMUS_SECRET_KEY'), $signature)) {
             Http::json(['ok' => false, 'error' => 'invalid_signature'], 401);
         }
-        Http::json(['ok' => true, 'result' => $subscriptions->handleProdamusWebhook($payload)]);
+        $result = $subscriptions->handleProdamusWebhook($payload);
+        $access = $result === 'activated_or_renewed' ? $worker->run(10) : null;
+        Http::json(['ok' => true, 'result' => $result, 'access' => $access]);
     }
 
     if ($method === 'POST' && $path === '/webhooks/telegram') {
