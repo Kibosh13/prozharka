@@ -232,6 +232,11 @@ if (paymentStatus) {
         message.textContent = "Создаём персональную ссылку в Telegram-канал.";
       }
 
+      if (data.status === "access_expired") {
+        showError("Срок оплаченного доступа завершён. Для продления оформите участие ещё раз.");
+        return;
+      }
+
       attempts += 1;
       if (attempts < 120) {
         window.setTimeout(pollOrder, 2500);
