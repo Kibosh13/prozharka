@@ -63,7 +63,7 @@ final class Config
             'APP_TIMEZONE' => 'Europe/Moscow',
             'SUBSCRIPTION_DAYS' => '31',
             'ACCESS_GRACE_HOURS' => '24',
-            'INVITE_LINK_TTL_HOURS' => '24',
+            'INVITE_LINK_TTL_HOURS' => '720',
             'DRY_RUN' => '1',
             'ACCESS_REMOVAL_ENABLED' => '0',
             'PRODAMUS_SYSTEM_CODE' => 'prozharka',
