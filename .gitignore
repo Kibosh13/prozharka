@@ -46,10 +46,12 @@ work/
 *.sqlite3
 *.db
 *.dump
+backend/var/*
+!backend/var/.gitkeep
+dist/assets/uploads/
 
 # Editors and operating systems
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
-

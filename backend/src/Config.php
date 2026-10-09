@@ -58,6 +58,14 @@ final class Config
             }
         }
 
+        // The editor keeps the visible participation price and checkout amount together.
+        $siteContentFile = $projectRoot . '/var/site-content.json';
+        $siteContent = is_file($siteContentFile) ? json_decode((string) file_get_contents($siteContentFile), true) : null;
+        $sitePrice = $siteContent['values']['settings.price'] ?? null;
+        if (is_string($sitePrice) && ctype_digit($sitePrice) && (int) $sitePrice >= 1 && (int) $sitePrice <= 1000000) {
+            $values['SUBSCRIPTION_PRICE'] = $sitePrice;
+        }
+
         return new self($values + [
             'APP_ENV' => 'production',
             'APP_TIMEZONE' => 'Europe/Moscow',

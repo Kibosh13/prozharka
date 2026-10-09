@@ -1,0 +1,8 @@
+DirectoryIndex index.php index.html
+Options -Indexes
+RewriteEngine On
+RewriteRule ^_backend(?:/|$) - [F,L]
+RewriteRule ^(?:index\.html)?$ index.php [L,QSA]
+RewriteRule ^payment\.html$ index.php?cms_page=payment [L,QSA]
+RewriteRule ^(privacy|consent|offer)/?(?:index\.html)?$ index.php?cms_page=$1 [L,QSA]
+RewriteRule ^robots\.txt$ cms-robots.php [L]
