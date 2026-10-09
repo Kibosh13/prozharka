@@ -1245,6 +1245,23 @@ a {
   gap: 10px;
 }
 
+.footer-contacts {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.footer-contacts:empty {
+  display: none;
+}
+
+.footer-contacts a {
+  text-underline-offset: 4px;
+}
+
 .footer-links a {
   text-underline-offset: 4px;
 }

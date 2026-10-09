@@ -62,6 +62,11 @@ if ("IntersectionObserver" in window) {
 
 const checkoutForm = document.querySelector("[data-checkout-form]");
 
+const siteCopy = JSON.parse(document.querySelector("#site-copy")?.textContent || "{}");
+const copy = (key, fallback) => siteCopy[key] ?? fallback;
+const escapeText = (value) => String(value).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+const copyHtml = (key, fallback) => escapeText(copy(key, fallback)).replace(/\n/g, "<br>");
+
 const cookieConsentName = "prozharka_cookie_consent";
 const cookieConsentVersion = "1";
 
@@ -109,21 +114,20 @@ const buildCookiePanel = () => {
   cookiePanel.setAttribute("aria-describedby", "cookie-consent-copy");
   cookiePanel.innerHTML = `
     <div class="cookie-consent__copy">
-      <p class="cookie-consent__eyebrow">Конфиденциальность</p>
-      <h2 id="cookie-consent-title">Настройки cookies</h2>
+      <p class="cookie-consent__eyebrow">${copyHtml("cookie.eyebrow", "Конфиденциальность")}</p>
+      <h2 id="cookie-consent-title">${copyHtml("cookie.title", "Настройки cookies")}</h2>
       <p id="cookie-consent-copy">
-        Сайт использует необходимые cookies для сохранения выбранных настроек. Аналитические cookies
-        могут использоваться только после вашего согласия. Сейчас аналитические сервисы не подключены.
+        ${copyHtml("cookie.description", "Сайт использует необходимые cookies для сохранения выбранных настроек. Аналитические cookies могут использоваться только после вашего согласия. Сейчас аналитические сервисы не подключены.")}
       </p>
       <nav aria-label="Документы о конфиденциальности">
-        <a href="${siteRoot}privacy/">Политика обработки данных</a>
-        <a href="${siteRoot}consent/">Согласие на обработку данных</a>
-        <a href="${siteRoot}offer/">Публичная оферта</a>
+        <a href="${siteRoot}privacy/">${copyHtml("cookie.privacy", "Политика обработки данных")}</a>
+        <a href="${siteRoot}consent/">${copyHtml("cookie.consent", "Согласие на обработку данных")}</a>
+        <a href="${siteRoot}offer/">${copyHtml("cookie.offer", "Публичная оферта")}</a>
       </nav>
     </div>
     <div class="cookie-consent__actions">
-      <button class="cookie-choice cookie-choice--secondary" type="button" data-cookie-choice="necessary">Только необходимые</button>
-      <button class="cookie-choice" type="button" data-cookie-choice="all">Принять</button>
+      <button class="cookie-choice cookie-choice--secondary" type="button" data-cookie-choice="necessary">${copyHtml("cookie.necessary", "Только необходимые")}</button>
+      <button class="cookie-choice" type="button" data-cookie-choice="all">${copyHtml("cookie.accept", "Принять")}</button>
     </div>`;
   document.body.append(cookiePanel);
 
@@ -148,6 +152,7 @@ buildCookiePanel();
 if (checkoutForm) {
   const checkoutButton = checkoutForm.querySelector("button[type='submit']");
   const checkoutStatus = checkoutForm.querySelector("[data-checkout-status]");
+  const checkoutButtonText = checkoutButton.textContent;
 
   checkoutForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -155,7 +160,7 @@ if (checkoutForm) {
     if (!checkoutForm.reportValidity()) return;
 
     checkoutButton.disabled = true;
-    checkoutButton.textContent = "Готовим оплату…";
+    checkoutButton.textContent = copy("checkout.loading", "Готовим оплату…");
     checkoutStatus.textContent = "";
 
     const form = new FormData(checkoutForm);
@@ -177,13 +182,13 @@ if (checkoutForm) {
       });
       const data = await response.json();
       if (!response.ok || !data.payment_url) {
-        throw new Error(data.error || "Не удалось открыть оплату");
+        throw new Error(data.error || copy("checkout.error", "Не удалось открыть оплату"));
       }
       window.location.assign(data.payment_url);
     } catch (error) {
-      checkoutStatus.textContent = error.message || "Временная ошибка. Попробуйте ещё раз.";
+      checkoutStatus.textContent = error.message || copy("checkout.unavailable", "Временная ошибка. Попробуйте ещё раз.");
       checkoutButton.disabled = false;
-      checkoutButton.textContent = "Перейти к оплате";
+      checkoutButton.textContent = checkoutButtonText;
     }
   });
 }
@@ -199,14 +204,14 @@ if (paymentStatus) {
   let attempts = 0;
 
   const showError = (text) => {
-    title.innerHTML = "Нужна<br />проверка.";
+    title.innerHTML = copyHtml("payment.error_title", "Нужна\nпроверка.");
     message.textContent = text;
     loader.hidden = true;
   };
 
   const pollOrder = async () => {
     if (!orderToken) {
-      showError("Не найден номер заказа. Вернитесь на сайт и повторите оформление.");
+      showError(copy("payment.missing_order", "Не найден номер заказа. Вернитесь на сайт и повторите оформление."));
       return;
     }
 
@@ -219,8 +224,8 @@ if (paymentStatus) {
       if (!response.ok) throw new Error(data.error || "Заказ не найден");
 
       if (data.status === "ready" && data.invite_link) {
-        title.innerHTML = "Добро<br />пожаловать.";
-        message.textContent = "Оплата подтверждена. Персональная ссылка готова — она рассчитана на одного участника.";
+        title.innerHTML = copyHtml("payment.ready_title", "Добро\nпожаловать.");
+        message.textContent = copy("payment.ready_message", "Оплата подтверждена. Персональная ссылка готова — она рассчитана на одного участника.");
         invite.href = data.invite_link;
         invite.hidden = false;
         loader.hidden = true;
@@ -228,12 +233,12 @@ if (paymentStatus) {
       }
 
       if (data.status === "preparing_access") {
-        title.innerHTML = "Оплата<br />получена.";
-        message.textContent = "Создаём персональную ссылку в Telegram-канал.";
+        title.innerHTML = copyHtml("payment.preparing_title", "Оплата\nполучена.");
+        message.textContent = copy("payment.preparing_message", "Создаём персональную ссылку в Telegram-канал.");
       }
 
       if (data.status === "access_expired") {
-        showError("Срок оплаченного доступа завершён. Для продления оформите участие ещё раз.");
+        showError(copy("payment.expired", "Срок оплаченного доступа завершён. Для продления оформите участие ещё раз."));
         return;
       }
 
@@ -241,14 +246,14 @@ if (paymentStatus) {
       if (attempts < 120) {
         window.setTimeout(pollOrder, 2500);
       } else {
-        showError("Оплата получена, но ссылка задерживается. Напишите в поддержку и укажите email из заказа.");
+        showError(copy("payment.delayed", "Оплата получена, но ссылка задерживается. Напишите в поддержку и укажите email из заказа."));
       }
     } catch (error) {
       attempts += 1;
       if (attempts < 12) {
         window.setTimeout(pollOrder, 2500);
       } else {
-        showError(error.message || "Не удалось проверить оплату.");
+        showError(error.message || copy("payment.error", "Не удалось проверить оплату."));
       }
     }
   };
